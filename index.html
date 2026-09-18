@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matek Túra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#7EC8E3;
+    --sky-bottom:#EAF6E9;
+    --trail:#B98A5E;
+    --trail-dark:#8C6642;
+    --leaf:#4C9A63;
+    --leaf-dark:#357048;
+    --sun:#FFC94A;
+    --coral:#FF6B5B;
+    --coral-dark:#D9483A;
+    --ink:#2B3A42;
+    --card:#FFFDF8;
+    --muted:#8B9A9E;
+    --active:#FF9F45;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:'Nunito',sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--sky-top) 0%, #BFE3E0 45%, var(--sky-bottom) 100%);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .wrap{width:100%;max-width:640px;}
+  h1{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:clamp(28px,6vw,38px);
+    text-align:center;
+    color:#2C5E45;
+    margin:4px 0 2px;
+    text-shadow:0 2px 0 rgba(255,255,255,.5);
+  }
+  .subtitle{
+    text-align:center;
+    color:#3E6E5A;
+    font-weight:700;
+    margin:0 0 20px;
+    font-size:15px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:22px;
+    padding:26px 24px 24px;
+    box-shadow:0 14px 30px rgba(60,80,50,.18), 0 2px 0 rgba(255,255,255,.6) inset;
+    border:3px solid #ffffffaa;
+    position:relative;
+  }
+  /* trail */
+  .trail{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:relative;
+    margin:6px 0 26px;
+    padding:0 4px;
+  }
+  .trail-line{
+    position:absolute;
+    top:19px;left:26px;right:26px;
+    height:6px;
+    background:var(--trail);
+    border-radius:6px;
+    z-index:0;
+  }
+  .checkpoint{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    flex:1;
+  }
+  .dot{
+    width:40px;height:40px;
+    border-radius:50%;
+    background:#fff;
+    border:4px solid var(--trail);
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+    transition:all .25s ease;
+  }
+  .checkpoint.active .dot{
+    background:var(--active);
+    border-color:var(--coral-dark);
+    transform:scale(1.18);
+    box-shadow:0 0 0 6px rgba(255,159,69,.25);
+  }
+  .checkpoint .lbl{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:var(--trail-dark);
+  }
+  .checkpoint.active .lbl{color:var(--coral-dark);}
+
+  .meta-row{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;
+    font-weight:700;
+    color:#4a5a5e;
+    font-size:14px;
+  }
+  .badge{
+    display:inline-block;
+    background:var(--leaf);
+    color:#fff;
+    padding:4px 12px;
+    border-radius:20px;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+  }
+  .score-pill{
+    background:var(--sun);
+    color:#6b4a00;
+    padding:4px 12px;
+    border-radius:20px;
+    font-weight:800;
+  }
+
+  .question-box{
+    background:#F3F8F1;
+    border:2px dashed #BFD9BE;
+    border-radius:16px;
+    padding:26px 18px;
+    text-align:center;
+    margin-bottom:20px;
+  }
+  .question-text{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:clamp(24px,7vw,32px);
+    color:#274B3B;
+    letter-spacing:1px;
+  }
+
+  input[type=text]{
+    width:100%;
+    font-family:'Baloo 2',sans-serif;
+    font-size:22px;
+    text-align:center;
+    padding:12px 10px;
+    border-radius:14px;
+    border:3px solid #CFE0CE;
+    outline:none;
+    margin-bottom:14px;
+    background:#fff;
+    color:var(--ink);
+  }
+  input[type=text]:focus{border-color:var(--active);}
+
+  button{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:17px;
+    border:none;
+    border-radius:14px;
+    padding:13px 20px;
+    cursor:pointer;
+    width:100%;
+    color:#fff;
+    background:var(--leaf);
+    box-shadow:0 4px 0 var(--leaf-dark);
+    transition:transform .08s ease;
+  }
+  button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--leaf-dark);}
+  button.secondary{
+    background:#EFEFEF;
+    color:#556;
+    box-shadow:0 4px 0 #cfcfcf;
+    margin-top:10px;
+  }
+  button.coral{
+    background:var(--coral);
+    box-shadow:0 4px 0 var(--coral-dark);
+  }
+  .error-msg{color:var(--coral-dark);font-weight:700;text-align:center;margin:-6px 0 12px;font-size:14px;min-height:18px;}
+
+  .feedback{
+    border-radius:16px;
+    padding:18px 18px 16px;
+    margin-bottom:16px;
+  }
+  .feedback.ok{background:#E7F5E9;border:2px solid #B7E0BE;}
+  .feedback.bad{background:#FDECEA;border:2px solid #F5C2BC;}
+  .feedback .headline{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:19px;
+    margin-bottom:6px;
+  }
+  .feedback.ok .headline{color:var(--leaf-dark);}
+  .feedback.bad .headline{color:var(--coral-dark);}
+  .steps{
+    background:#fff;
+    border-radius:10px;
+    padding:12px 14px;
+    margin-top:10px;
+    font-weight:700;
+    color:#3a4a4e;
+    line-height:1.7;
+    font-size:15px;
+  }
+  .bonus-note{
+    margin-top:10px;
+    background:#FFF3D6;
+    border:2px solid var(--sun);
+    border-radius:10px;
+    padding:8px 12px;
+    font-weight:800;
+    color:#7a5900;
+    text-align:center;
+  }
+  .rules-list{
+    text-align:left;
+    font-weight:600;
+    line-height:1.65;
+    color:#33474b;
+    font-size:15px;
+    margin:0 0 18px;
+    padding-left:20px;
+  }
+  .rules-list li{margin-bottom:6px;}
+  .level-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:18px;
+    font-size:14px;
+  }
+  .level-table th,.level-table td{
+    border-bottom:1px solid #e2e2e2;
+    padding:6px 8px;
+    text-align:left;
+  }
+  .level-table th{color:#556;font-family:'Baloo 2',sans-serif;}
+
+  .final-score{
+    text-align:center;
+    font-family:'Baloo 2',sans-serif;
+    font-size:44px;
+    font-weight:800;
+    color:var(--leaf-dark);
+    margin:10px 0 6px;
+  }
+  .final-sub{
+    text-align:center;
+    font-weight:700;
+    color:#3E6E5A;
+    margin-bottom:18px;
+  }
+  .trophy-wrap{text-align:center;margin:8px 0 16px;}
+  .role-switch{display:flex;gap:10px;margin-bottom:18px;}
+  .role-btn{
+    flex:1;background:#EFF4EE;color:#5a6d63;box-shadow:0 3px 0 #d5ded4;font-size:15px;padding:11px 8px;
+  }
+  .role-btn.active{background:var(--leaf);color:#fff;box-shadow:0 3px 0 var(--leaf-dark);}
+  .field-label{
+    display:block;font-weight:800;font-size:13px;color:#5a6d63;margin:0 0 5px 4px;text-transform:uppercase;letter-spacing:.5px;
+  }
+  .hint{font-size:13px;color:var(--muted);font-weight:600;text-align:center;margin:12px 0 0;line-height:1.5;}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+  .stat{background:#F3F8F1;border:2px solid #DCEBDA;border-radius:12px;padding:10px 6px;text-align:center;}
+  .stat .num{font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:800;color:var(--leaf-dark);}
+  .stat .cap{font-size:11px;font-weight:700;color:#6c8175;text-transform:uppercase;letter-spacing:.4px;}
+  .tab-row{display:flex;gap:8px;margin:14px 0 12px;}
+  .tab-btn{flex:1;background:#EFEFEF;color:#5a6a6e;box-shadow:0 3px 0 #d8d8d8;font-size:14px;padding:9px 6px;}
+  .tab-btn.active{background:var(--sun);color:#6b4a00;box-shadow:0 3px 0 #d9a017;}
+  .result-table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:14px;}
+  .result-table th{
+    text-align:left;font-family:'Baloo 2',sans-serif;font-size:12px;color:#6c8175;
+    text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #DCEBDA;padding:6px 6px;
+  }
+  .result-table td{border-bottom:1px solid #eee;padding:8px 6px;font-weight:700;color:#3a4a4e;}
+  .result-table td.name{font-family:'Baloo 2',sans-serif;}
+  .pt{color:var(--leaf-dark);}
+  .lvl-chip{
+    display:inline-block;background:#EAF2E8;border-radius:8px;padding:1px 7px;font-size:12px;font-weight:800;color:#4b6b55;
+  }
+  .empty-note{
+    background:#F7F7F4;border:2px dashed #dcdcd2;border-radius:12px;padding:18px;text-align:center;
+    font-weight:700;color:#8a938d;margin-bottom:14px;
+  }
+  .qmap{letter-spacing:2px;font-size:15px;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🥾 Matek Túra</h1>
+  <p class="subtitle">Mássz fel a hegyre helyes válaszokkal!</p>
+  <div class="card">
+
+    <div class="trail" id="trail">
+      <div class="trail-line"></div>
+      <div class="checkpoint" data-lvl="A"><div class="dot">🏕️</div><div class="lbl">Alap</div></div>
+      <div class="checkpoint" data-lvl="K1"><div class="dot">🌳</div><div class="lbl">K1</div></div>
+      <div class="checkpoint" data-lvl="K2"><div class="dot">⛰️</div><div class="lbl">K2</div></div>
+      <div class="checkpoint" data-lvl="K3"><div class="dot">🪨</div><div class="lbl">K3</div></div>
+      <div class="checkpoint" data-lvl="H"><div class="dot">🏔️</div><div class="lbl">Haladó</div></div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="screen-start">
+      <ul class="rules-list">
+        <li>A kvíz <b>10 feladatból</b> áll: összeadást, kivonást, szorzást, osztást és a műveletek sorrendjét gyakoroljuk a <b>100-as számkörben</b>.</li>
+        <li>A szorzás és az osztás mindig <b>előbb jön</b>, mint az összeadás és a kivonás — kivéve, ha zárójel van!</li>
+        <li>Mindig csak a <b>végeredmény egész számát</b> írd be a mezőbe.</li>
+        <li>A feladatlap <b>K2 szinten indul</b>. Ha jól válaszolsz, eggyel nehezebb szintre lépsz. Ha rosszul, eggyel könnyebb szintre.</li>
+        <li>Minden szintnek más a pontértéke — minél nehezebb a feladat, annál többet ér!</li>
+        <li>Ha egymás után <b>több Haladó szintű</b> feladatot is megoldasz helyesen, extra bónuszpontokat kapsz. 5 egymás utáni Haladó feladat = maximális, 100 pontos végeredmény és egy meglepetés jutalom! 🏆</li>
+      </ul>
+      <table class="level-table">
+        <tr><th>Szint</th><th>Pont</th></tr>
+        <tr><td>Alap</td><td>1 pont</td></tr>
+        <tr><td>K1</td><td>3 pont</td></tr>
+        <tr><td>K2</td><td>5 pont</td></tr>
+        <tr><td>K3</td><td>8 pont</td></tr>
+        <tr><td>Haladó</td><td>10 pont</td></tr>
+      </table>
+      <p style="text-align:center;font-weight:700;color:#3E6E5A;margin-bottom:10px;">Írd be, hogy <b>START</b>, majd nyomd meg a gombot az induláshoz!</p>
+      <input type="text" id="start-input" placeholder="Írd ide: START" autocomplete="off">
+      <div class="error-msg" id="start-error"></div>
+      <button id="btn-start-quiz">Indulhat a túra! 🚀</button>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div id="screen-question" class="hidden">
+      <div class="meta-row">
+        <span class="badge" id="level-badge">K2</span>
+        <span id="qcount">1. / 10. feladat</span>
+        <span class="score-pill" id="score-pill">0 pont</span>
+      </div>
+      <div class="question-box">
+        <div class="question-text" id="question-text">?</div>
+      </div>
+      <input type="text" id="answer-input" placeholder="Ide írd a választ" autocomplete="off" inputmode="numeric">
+      <div class="error-msg" id="answer-error"></div>
+      <button id="btn-submit-answer">Válasz beküldése ✅</button>
+    </div>
+
+    <!-- FEEDBACK SCREEN -->
+    <div id="screen-feedback" class="hidden">
+      <div class="feedback" id="feedback-box">
+        <div class="headline" id="feedback-headline"></div>
+        <div id="feedback-body"></div>
+      </div>
+      <div id="bonus-area"></div>
+      <div class="score-pill" id="feedback-score" style="display:inline-block;margin-bottom:14px;"></div>
+      <button id="next-btn">Következő feladat ➡️</button>
+      <button id="dispute-btn" class="secondary hidden">Szerintem a válaszom jó volt 🤔</button>
+      <div id="dispute-msg" class="error-msg"></div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="screen-end" class="hidden">
+      <div class="trophy-wrap hidden" id="trophy-wrap">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <ellipse cx="60" cy="108" rx="34" ry="6" fill="#00000022"/>
+          <rect x="46" y="80" width="28" height="18" rx="3" fill="#B98A5E"/>
+          <rect x="36" y="94" width="48" height="10" rx="3" fill="#8C6642"/>
+          <path d="M40 30 h40 v28 a20 20 0 0 1 -40 0 z" fill="#FFC94A" stroke="#D9A017" stroke-width="3"/>
+          <path d="M40 34 c-16 0 -18 24 0 26" fill="none" stroke="#D9A017" stroke-width="5" stroke-linecap="round"/>
+          <path d="M80 34 c16 0 18 24 0 26" fill="none" stroke="#D9A017" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="60" cy="20" r="10" fill="#FFDD7A" stroke="#D9A017" stroke-width="3"/>
+          <path d="M52 76 l8 -18 l8 18 z" fill="#FF9F45"/>
+        </svg>
+        <p style="font-family:'Baloo 2',sans-serif;font-weight:700;color:#7a5900;">5 egymás utáni Haladó feladat — igazi bajnok vagy! 🏆</p>
+      </div>
+      <div class="final-score" id="final-score">0 pont</div>
+      <div class="final-sub" id="final-summary"></div>
+      <button id="btn-restart">Új túra indítása 🔄</button>
+    </div>
+
+
+
+  </div>
+</div>
+
+<script>
+const levelOrder = ['A','K1','K2','K3','H'];
+const levelPoints = {A:1,K1:3,K2:5,K3:8,H:10};
+const levelFull = {A:'Alap',K1:'K1',K2:'K2',K3:'K3',H:'Haladó'};
+const milestoneBonus = {3:3,4:8,5:15,6:24,7:35};
+
+let score = 0;
+let questionIndex = 0;
+let currentLevel = 'K2';
+let hStreak = 0;
+let gameOver = false;
+let currentQuestion = null;
+let levelAtAnswer = null;
+let lastRawInput = '';
+let disputeAvailable = false;
+let answerLog = [];
+let bestHStreak = 0;
+
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function genA(){
+  // Max. 2 egyjegyű szám, 1 művelet: +, -, vagy szorzás
+  let a,b,op,ans,valid=false;
+  while(!valid){
+    a=randInt(1,9); b=randInt(1,9);
+    const r=Math.random();
+    op = r<0.34 ? '+' : (r<0.67 ? '-' : '·');
+    if(op==='+'){ ans=a+b; valid=true; }
+    else if(op==='-'){ if(a>b){ ans=a-b; valid=true; } }
+    else { if(a>1 && b>1){ ans=a*b; valid=true; } }
+  }
+  return {question:`${a} ${op} ${b} = ?`, answer:ans, steps:[`${a} ${op} ${b} = ${ans}`], level:'A'};
+}
+
+function genK1(){
+  // 1 egyjegyű és 1 kétjegyű szám, 1 művelet
+  let t,s,op,ans,valid=false,tries=0;
+  while(!valid && tries<400){
+    tries++;
+    t=randInt(10,99); s=randInt(2,9);
+    const r=Math.random();
+    op = r<0.28 ? '+' : (r<0.56 ? '-' : (r<0.8 ? '·' : ':'));
+    if(op==='+'){ if(t+s<=100){ ans=t+s; valid=true; } }
+    else if(op==='-'){ if(t-s>0){ ans=t-s; valid=true; } }
+    else if(op==='·'){ if(t*s<=100){ ans=t*s; valid=true; } }
+    else { if(t%s===0 && t/s>1){ ans=t/s; valid=true; } }
+  }
+  if(!valid){ t=48; s=6; op=':'; ans=8; }
+  return {question:`${t} ${op} ${s} = ?`, answer:ans, steps:[`${t} ${op} ${s} = ${ans}`], level:'K1'};
+}
+
+function genK2(){
+  // 2 kétjegyű szám, 1 művelet, 100-as számkör
+  let p,q,op,ans,valid=false,tries=0;
+  while(!valid && tries<500){
+    tries++;
+    const r=Math.random();
+    if(r<0.4){
+      p=randInt(10,89);
+      const qmax=Math.min(99,100-p);
+      if(qmax<10) continue;
+      q=randInt(10,qmax);
+      op='+';
+      if(p+q<=100){ ans=p+q; valid=true; }
+    } else if(r<0.8){
+      p=randInt(20,99); q=randInt(10,99);
+      op='-';
+      if(p-q>0){ ans=p-q; valid=true; }
+    } else {
+      // kétjegyű osztó, egész hányados
+      q=randInt(11,25);
+      const k=randInt(2,8);
+      p=q*k;
+      op=':';
+      if(p>=10 && p<=100){ ans=k; valid=true; }
+    }
+  }
+  if(!valid){ p=72; q=18; op=':'; ans=4; }
+  return {question:`${p} ${op} ${q} = ?`, answer:ans, steps:[`${p} ${op} ${q} = ${ans}`], level:'K2'};
+}
+
+function genK3(){
+  // 2 művelet: 1 összeadás vagy kivonás + 1 szorzás vagy osztás
+  let tries=0;
+  while(tries<600){
+    tries++;
+    const tpl=randInt(0,3);
+    const addOp = Math.random()<0.5 ? '+' : '-';
+
+    if(tpl===0){ // a · b ± c
+      const a=randInt(2,9), b=randInt(2,9), c=randInt(2,40);
+      const prod=a*b;
+      if(prod>100) continue;
+      const ans = addOp==='+' ? prod+c : prod-c;
+      if(ans<1 || ans>100) continue;
+      return {question:`${a} · ${b} ${addOp} ${c} = ?`, answer:ans,
+        steps:[`1. lépés (előbb a szorzás): ${a} · ${b} = ${prod}`, `2. lépés: ${prod} ${addOp} ${c} = ${ans}`], level:'K3'};
+    }
+    if(tpl===1){ // c ± a · b
+      const a=randInt(2,9), b=randInt(2,9), c=randInt(5,90);
+      const prod=a*b;
+      if(prod>100) continue;
+      const ans = addOp==='+' ? c+prod : c-prod;
+      if(ans<1 || ans>100) continue;
+      return {question:`${c} ${addOp} ${a} · ${b} = ?`, answer:ans,
+        steps:[`1. lépés (előbb a szorzás): ${a} · ${b} = ${prod}`, `2. lépés: ${c} ${addOp} ${prod} = ${ans}`], level:'K3'};
+    }
+    if(tpl===2){ // a : b ± c
+      const b=randInt(2,9), k=randInt(2,10), a=b*k, c=randInt(2,50);
+      if(a>100) continue;
+      const ans = addOp==='+' ? k+c : k-c;
+      if(ans<1 || ans>100) continue;
+      return {question:`${a} : ${b} ${addOp} ${c} = ?`, answer:ans,
+        steps:[`1. lépés (előbb az osztás): ${a} : ${b} = ${k}`, `2. lépés: ${k} ${addOp} ${c} = ${ans}`], level:'K3'};
+    }
+    // tpl 3: c ± a : b
+    const b=randInt(2,9), k=randInt(2,10), a=b*k, c=randInt(5,90);
+    if(a>100) continue;
+    const ans = addOp==='+' ? c+k : c-k;
+    if(ans<1 || ans>100) continue;
+    return {question:`${c} ${addOp} ${a} : ${b} = ?`, answer:ans,
+      steps:[`1. lépés (előbb az osztás): ${a} : ${b} = ${k}`, `2. lépés: ${c} ${addOp} ${k} = ${ans}`], level:'K3'};
+  }
+  return {question:`6 · 7 + 12 = ?`, answer:54,
+    steps:['1. lépés (előbb a szorzás): 6 · 7 = 42','2. lépés: 42 + 12 = 54'], level:'K3'};
+}
+
+function genH(){
+  // 3 művelet, zárójelezés, különböző műveletek
+  let tries=0;
+  while(tries<900){
+    tries++;
+    const tpl=randInt(0,5);
+
+    if(tpl===0){ // (a + b) · c - d
+      const a=randInt(2,8), b=randInt(1,8), c=randInt(2,9), d=randInt(2,40);
+      const s1=a+b;
+      if(s1>10) continue;
+      const s2=s1*c;
+      if(s2>100) continue;
+      const ans=s2-d;
+      if(ans<1) continue;
+      return {question:`(${a} + ${b}) · ${c} - ${d} = ?`, answer:ans,
+        steps:[`1. lépés (zárójel): ${a} + ${b} = ${s1}`, `2. lépés (szorzás): ${s1} · ${c} = ${s2}`, `3. lépés: ${s2} - ${d} = ${ans}`], level:'H'};
+    }
+    if(tpl===1){ // (a - b) · c + d
+      const a=randInt(4,18), b=randInt(1,9), c=randInt(2,9), d=randInt(2,40);
+      const s1=a-b;
+      if(s1<2 || s1>10) continue;
+      const s2=s1*c;
+      if(s2>100) continue;
+      const ans=s2+d;
+      if(ans>100) continue;
+      return {question:`(${a} - ${b}) · ${c} + ${d} = ?`, answer:ans,
+        steps:[`1. lépés (zárójel): ${a} - ${b} = ${s1}`, `2. lépés (szorzás): ${s1} · ${c} = ${s2}`, `3. lépés: ${s2} + ${d} = ${ans}`], level:'H'};
+    }
+    if(tpl===2){ // (a + b) : c - d
+      const c=randInt(2,9), k=randInt(3,12), s1=c*k;
+      if(s1>100) continue;
+      const a=randInt(2,s1-2), b=s1-a;
+      const d=randInt(1,k-1);
+      const ans=k-d;
+      if(ans<1) continue;
+      return {question:`(${a} + ${b}) : ${c} - ${d} = ?`, answer:ans,
+        steps:[`1. lépés (zárójel): ${a} + ${b} = ${s1}`, `2. lépés (osztás): ${s1} : ${c} = ${k}`, `3. lépés: ${k} - ${d} = ${ans}`], level:'H'};
+    }
+    if(tpl===3){ // a · b - (c + d)
+      const a=randInt(3,9), b=randInt(3,9), c=randInt(2,30), d=randInt(2,30);
+      const s1=a*b;
+      if(s1>100) continue;
+      const s2=c+d;
+      const ans=s1-s2;
+      if(ans<1) continue;
+      return {question:`${a} · ${b} - (${c} + ${d}) = ?`, answer:ans,
+        steps:[`1. lépés (zárójel): ${c} + ${d} = ${s2}`, `2. lépés (szorzás): ${a} · ${b} = ${s1}`, `3. lépés: ${s1} - ${s2} = ${ans}`], level:'H'};
+    }
+    if(tpl===4){ // (a - b) : c + d
+      const c=randInt(2,9), k=randInt(2,10), s1=c*k;
+      if(s1>90) continue;
+      const b=randInt(2,20), a=s1+b;
+      if(a>100) continue;
+      const d=randInt(2,40);
+      const ans=k+d;
+      if(ans>100) continue;
+      return {question:`(${a} - ${b}) : ${c} + ${d} = ?`, answer:ans,
+        steps:[`1. lépés (zárójel): ${a} - ${b} = ${s1}`, `2. lépés (osztás): ${s1} : ${c} = ${k}`, `3. lépés: ${k} + ${d} = ${ans}`], level:'H'};
+    }
+    // tpl 5: a : b + (c - d)
+    const b=randInt(2,9), k=randInt(2,10), a=b*k;
+    if(a>100) continue;
+    const d=randInt(2,25), c=randInt(d+1, d+40);
+    const s2=c-d;
+    const ans=k+s2;
+    if(ans>100) continue;
+    return {question:`${a} : ${b} + (${c} - ${d}) = ?`, answer:ans,
+      steps:[`1. lépés (zárójel): ${c} - ${d} = ${s2}`, `2. lépés (osztás): ${a} : ${b} = ${k}`, `3. lépés: ${k} + ${s2} = ${ans}`], level:'H'};
+  }
+  return {question:`(4 + 5) · 8 - 22 = ?`, answer:50,
+    steps:['1. lépés (zárójel): 4 + 5 = 9','2. lépés (szorzás): 9 · 8 = 72','3. lépés: 72 - 22 = 50'], level:'H'};
+}
+
+function generateQuestion(level){
+  switch(level){
+    case 'A': return genA();
+    case 'K1': return genK1();
+    case 'K2': return genK2();
+    case 'K3': return genK3();
+    case 'H': return genH();
+  }
+}
+
+function showScreen(id){
+  ['screen-start','screen-question','screen-feedback','screen-end'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s!==id);
+  });
+}
+
+function updateTrail(){
+  document.querySelectorAll('.checkpoint').forEach(cp=>{
+    cp.classList.toggle('active', cp.dataset.lvl===currentLevel);
+  });
+}
+
+function tryStart(){
+  const val = document.getElementById('start-input').value.trim().toUpperCase();
+  const err = document.getElementById('start-error');
+  if(val !== 'START'){
+    err.textContent = 'Írd be pontosan, hogy START, hogy elindulhassunk a túrán! 🙂';
+    return;
+  }
+  err.textContent = '';
+  score = 0; questionIndex = 0; currentLevel = 'K2'; hStreak = 0; gameOver = false; answerLog = []; bestHStreak = 0;
+  updateTrail();
+  showQuestion();
+}
+
+function showQuestion(){
+  questionIndex++;
+  if(questionIndex > 10){ endGame(false); return; }
+  currentQuestion = generateQuestion(currentLevel);
+  document.getElementById('level-badge').textContent = levelFull[currentLevel];
+  document.getElementById('qcount').textContent = `${questionIndex}. / 10. feladat`;
+  document.getElementById('score-pill').textContent = `${score} pont`;
+  document.getElementById('question-text').textContent = currentQuestion.question;
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-error').textContent = '';
+  updateTrail();
+  showScreen('screen-question');
+  document.getElementById('answer-input').focus();
+}
+
+function parseAnswer(raw){
+  const normalized = raw.trim().replace(/^\+/,'');
+  if(!/^-?\d+$/.test(normalized)) return null;
+  return parseInt(normalized, 10);
+}
+
+function submitAnswer(){
+  const raw = document.getElementById('answer-input').value;
+  const err = document.getElementById('answer-error');
+  const parsed = parseAnswer(raw);
+  if(parsed === null){
+    err.textContent = 'Csak egész számot fogadok el — próbáld újra!';
+    return;
+  }
+  err.textContent = '';
+  lastRawInput = raw;
+  // kétszeres ellenőrzés
+  const check1 = parsed === currentQuestion.answer;
+  const check2 = parseAnswer(raw) === currentQuestion.answer;
+  const isCorrect = check1 && check2;
+  handleResult(isCorrect);
+}
+
+function handleResult(isCorrect){
+  levelAtAnswer = currentLevel;
+  answerLog.push({level: currentLevel, correct: isCorrect});
+  let bonusEarned = 0;
+  let trophy = false;
+
+  if(isCorrect){
+    score += levelPoints[levelAtAnswer];
+    if(levelAtAnswer === 'H'){
+      hStreak++;
+      if(hStreak > bestHStreak) bestHStreak = hStreak;
+      if(milestoneBonus[hStreak]){
+        bonusEarned = milestoneBonus[hStreak];
+        score += bonusEarned;
+      }
+      if(hStreak >= 5){
+        score = 100;
+        trophy = true;
+        gameOver = true;
+      }
+    } else {
+      hStreak = 0;
+    }
+  } else {
+    hStreak = 0;
+  }
+
+  const idx = levelOrder.indexOf(levelAtAnswer);
+  currentLevel = isCorrect ? levelOrder[Math.min(4, idx+1)] : levelOrder[Math.max(0, idx-1)];
+  updateTrail();
+
+  renderFeedback(isCorrect, bonusEarned, trophy, false);
+}
+
+const positiveOpeners = [
+  'Szuper munka!', 'Ez az, remekül gondolkodtál!', 'Nagyon ügyes vagy!', 'Klassz próbálkozás!', 'Bátran mentél neki, ez a lényeg!'
+];
+const consoleOpeners = [
+  'Semmi baj, ez egy tanuló feladat volt!', 'Ne aggódj, mindenki hibázik néha!', 'Jó úton jársz, csak egy apróság csúszott el!', 'Ügyes próbálkozás volt, nézzük együtt!'
+];
+
+function renderFeedback(isCorrect, bonusEarned, trophy, isDisputeFix){
+  const box = document.getElementById('feedback-box');
+  const headline = document.getElementById('feedback-headline');
+  const body = document.getElementById('feedback-body');
+  const bonusArea = document.getElementById('bonus-area');
+  const scoreEl = document.getElementById('feedback-score');
+  const nextBtn = document.getElementById('next-btn');
+  const disputeBtn = document.getElementById('dispute-btn');
+  const disputeMsg = document.getElementById('dispute-msg');
+  disputeMsg.textContent = '';
+
+  box.className = 'feedback ' + (isCorrect ? 'ok' : 'bad');
+
+  if(isDisputeFix){
+    headline.textContent = '👀 Alaposan újranéztem — igazad volt!';
+    body.innerHTML = `<div>A válaszod valójában <b>helyes</b> volt, elnézést a tévedésért! Mostantól ez pontszámba is beszámít.</div>`;
+  } else if(isCorrect){
+    const opener = positiveOpeners[randInt(0, positiveOpeners.length-1)];
+    headline.textContent = `${opener} ✅ Helyes válasz!`;
+    body.innerHTML = `<div>A ${levelFull[levelAtAnswer]} szintű feladatot sikeresen megoldottad, +${levelPoints[levelAtAnswer]} pontot szereztél.</div>`;
+  } else {
+    const opener = consoleOpeners[randInt(0, consoleOpeners.length-1)];
+    headline.textContent = `${opener} ❌ Nem ez a helyes válasz.`;
+    const stepsHtml = currentQuestion.steps.map(s=>`<div>${s}</div>`).join('');
+    body.innerHTML = `<div>A helyes megoldás: <b>${currentQuestion.answer}</b></div><div class="steps">${stepsHtml}</div>`;
+  }
+
+  bonusArea.innerHTML = '';
+  if(bonusEarned > 0 && !isDisputeFix){
+    bonusArea.innerHTML = `<div class="bonus-note">🔥 ${hStreak} egymás utáni Haladó feladat! Bónusz: +${bonusEarned} pont</div>`;
+  }
+  if(bonusEarned > 0 && isDisputeFix){
+    bonusArea.innerHTML = `<div class="bonus-note">🔥 ${hStreak} egymás utáni Haladó feladat! Bónusz: +${bonusEarned} pont</div>`;
+  }
+
+  scoreEl.textContent = `${score} pont`;
+
+  disputeAvailable = (!isCorrect && !isDisputeFix);
+  disputeBtn.classList.toggle('hidden', !disputeAvailable);
+
+  if(gameOver){
+    nextBtn.textContent = 'Eredmény megtekintése 🏁';
+    nextBtn.onclick = () => endGame(trophy);
+  } else {
+    nextBtn.textContent = 'Következő feladat ➡️';
+    nextBtn.onclick = () => goNext();
+  }
+
+  showScreen('screen-feedback');
+}
+
+function disputeAnswer(){
+  if(!disputeAvailable) return;
+  const disputeMsg = document.getElementById('dispute-msg');
+  const recheck1 = parseAnswer(lastRawInput);
+  const recheck2 = parseAnswer(lastRawInput);
+  const nowCorrect = (recheck1 === currentQuestion.answer) && (recheck2 === currentQuestion.answer);
+
+  if(nowCorrect){
+    if(answerLog.length) answerLog[answerLog.length-1].correct = true;
+    disputeAvailable = false;
+    document.getElementById('dispute-btn').classList.add('hidden');
+
+    let bonusEarned = 0;
+    let trophy = false;
+    score += levelPoints[levelAtAnswer];
+    if(levelAtAnswer === 'H'){
+      hStreak++;
+      if(hStreak > bestHStreak) bestHStreak = hStreak;
+      if(milestoneBonus[hStreak]){
+        bonusEarned = milestoneBonus[hStreak];
+        score += bonusEarned;
+      }
+      if(hStreak >= 5){
+        score = 100;
+        trophy = true;
+        gameOver = true;
+      }
+    } else {
+      hStreak = 0;
+    }
+    const idx = levelOrder.indexOf(levelAtAnswer);
+    currentLevel = levelOrder[Math.min(4, idx+1)];
+    updateTrail();
+
+    renderFeedback(true, bonusEarned, trophy, true);
+  } else {
+    disputeMsg.textContent = 'Kétszer is újraellenőriztem — sajnos ez a válasz így sem egyezik a helyes eredménnyel.';
+    disputeAvailable = false;
+    document.getElementById('dispute-btn').classList.add('hidden');
+  }
+}
+
+function goNext(){
+  if(gameOver){ endGame(false); return; }
+  showQuestion();
+}
+
+function endGame(trophy){
+  gameOver = true;
+  document.getElementById('final-score').textContent = `${score} pont`;
+  document.getElementById('trophy-wrap').classList.toggle('hidden', !trophy);
+
+  let summary;
+  if(trophy){
+    summary = 'Hihetetlen teljesítmény — 5 Haladó szintű feladatot egymás után megoldottál! Igazi hegymászó bajnok vagy! 🏔️';
+  } else if(score >= 70){
+    summary = 'Kiváló eredmény! Igazán magabiztosan mozogsz az összeadás, kivonás és a műveletek sorrendje között!';
+  } else if(score >= 40){
+    summary = 'Nagyon szép munka! Egyre magasabbra jutottál a hegyen — még egy kicsit gyakorolj, és a csúcson a helyed!';
+  } else if(score >= 20){
+    summary = 'Jó úton jársz! Néhány trükkösebb feladat még kifogott rajtad, de a gyakorlás csodákra képes.';
+  } else {
+    summary = 'Ez volt az első túrád — a fontos, hogy nekivágtál! Gyakorolj még egy kicsit, és legközelebb még feljebb jutsz!';
+  }
+  document.getElementById('final-summary').textContent = summary;
+  showScreen('screen-end');
+}
+
+function restartSameStudent(){
+  document.getElementById('start-input').value = '';
+  document.getElementById('start-error').textContent = '';
+  showScreen('screen-start');
+}
+
+document.getElementById('start-input').addEventListener('keydown', e=>{ if(e.key==='Enter') tryStart(); });
+document.getElementById('answer-input').addEventListener('keydown', e=>{ if(e.key==='Enter') submitAnswer(); });
+
+document.getElementById('btn-start-quiz').addEventListener('click', tryStart);
+document.getElementById('btn-submit-answer').addEventListener('click', submitAnswer);
+document.getElementById('dispute-btn').addEventListener('click', disputeAnswer);
+document.getElementById('btn-restart').addEventListener('click', restartSameStudent);
+
+updateTrail();
+</script>
+</body>
+</html>
